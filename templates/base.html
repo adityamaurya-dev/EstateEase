@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EstateEase | Luxury Real Estate & Prime Properties{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            DEFAULT: '#0B1528',
+                            dark: '#070D19',
+                            light: '#162544',
+                            border: '#1E335C'
+                        },
+                        beige: {
+                            DEFAULT: '#F3EFE6',
+                            light: '#FBF9F5',
+                            dark: '#E5DED0'
+                        },
+                        gold: {
+                            DEFAULT: '#C59B27',
+                            hover: '#B0871D',
+                            light: '#FDF8E8'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'Georgia', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-beige-light text-slate-800 flex flex-col min-h-screen antialiased">
+    
+    <!-- Sticky Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 transition-all duration-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Brand Logo -->
+                <a href="{{ url_for('main.index') }}" class="flex items-center gap-3 group">
+                    <div class="w-11 h-11 rounded-xl bg-navy text-gold flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-200">
+                        <i data-lucide="building-2" class="w-6 h-6 stroke-[2.2]"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xl font-bold tracking-tight text-navy font-serif">Estate<span class="text-gold">Ease</span></span>
+                        <span class="text-[10px] uppercase tracking-widest text-slate-500 font-semibold -mt-1">Premier Real Estate</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden md:flex items-center gap-8">
+                    <a href="{{ url_for('main.index') }}" class="text-sm font-semibold hover:text-gold transition-colors {{ 'text-gold' if request.endpoint == 'main.index' else 'text-slate-700' }}">Home</a>
+                    <a href="{{ url_for('properties.list_properties') }}" class="text-sm font-semibold hover:text-gold transition-colors {{ 'text-gold' if request.endpoint == 'properties.list_properties' else 'text-slate-700' }}">Explore Properties</a>
+                    <a href="{{ url_for('properties.list_properties', purpose='buy') }}" class="text-sm font-semibold hover:text-gold transition-colors text-slate-700">Buy</a>
+                    <a href="{{ url_for('properties.list_properties', purpose='rent') }}" class="text-sm font-semibold hover:text-gold transition-colors text-slate-700">Rent</a>
+                    <a href="{{ url_for('main.about') }}" class="text-sm font-semibold hover:text-gold transition-colors {{ 'text-gold' if request.endpoint == 'main.about' else 'text-slate-700' }}">About</a>
+                    <a href="{{ url_for('main.contact') }}" class="text-sm font-semibold hover:text-gold transition-colors {{ 'text-gold' if request.endpoint == 'main.contact' else 'text-slate-700' }}">Contact</a>
+                </nav>
+
+                <!-- Desktop Right Actions -->
+                <div class="hidden md:flex items-center gap-4">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('properties.create_property') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-navy text-white text-xs font-bold uppercase tracking-wider hover:bg-navy-light transition shadow-sm">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Add Listing
+                        </a>
+
+                        <!-- User Profile Dropdown Menu -->
+                        <div class="relative group">
+                            <button class="flex items-center gap-2.5 p-1.5 rounded-full hover:bg-slate-100 transition border border-slate-200">
+                                <img src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80' }}" alt="{{ current_user.full_name }}" class="w-8 h-8 rounded-full object-cover">
+                                <span class="text-xs font-semibold text-slate-800 pr-1">{{ current_user.full_name.split()[0] }}</span>
+                                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500"></i>
+                            </button>
+
+                            <div class="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 hidden group-hover:block transition-all animate-in fade-in zoom-in-95 duration-150">
+                                <div class="px-4 py-2 border-b border-slate-100">
+                                    <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Signed in as</p>
+                                    <p class="text-sm font-bold text-slate-900 truncate">{{ current_user.full_name }}</p>
+                                    <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 bg-gold-light text-yellow-800 border border-yellow-200/60 uppercase">{{ current_user.role }}</span>
+                                </div>
+                                <a href="{{ url_for('dashboard.dashboard_home') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 font-medium">
+                                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-500"></i> Dashboard
+                                </a>
+                                <a href="{{ url_for('properties.my_listings') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 font-medium">
+                                    <i data-lucide="home" class="w-4 h-4 text-slate-500"></i> My Listings
+                                </a>
+                                <a href="{{ url_for('properties.create_property') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 font-medium">
+                                    <i data-lucide="plus-circle" class="w-4 h-4 text-slate-500"></i> Post New Property
+                                </a>
+                                <div class="border-t border-slate-100 my-1"></div>
+                                <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 font-medium">
+                                    <i data-lucide="log-out" class="w-4 h-4 text-rose-500"></i> Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="text-sm font-semibold text-slate-700 hover:text-navy transition px-3 py-2">Sign In</a>
+                        <a href="{{ url_for('auth.register') }}" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-navy text-white text-xs font-bold uppercase tracking-wider hover:bg-navy-light transition shadow-sm">
+                            Get Started
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="flex items-center gap-2 md:hidden">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('properties.create_property') }}" class="p-2 rounded-lg bg-navy text-white">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </a>
+                    {% endif %}
+                    <button id="mobile-menu-btn" type="button" aria-expanded="false" aria-label="Toggle navigation menu" class="p-2.5 rounded-xl text-slate-700 hover:bg-slate-100 transition border border-slate-200">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Drawer Navigation -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 bg-white px-4 pt-4 pb-6 space-y-3">
+            <a href="{{ url_for('main.index') }}" class="block px-3 py-2 rounded-lg text-base font-semibold text-slate-800 hover:bg-slate-50">Home</a>
+            <a href="{{ url_for('properties.list_properties') }}" class="block px-3 py-2 rounded-lg text-base font-semibold text-slate-800 hover:bg-slate-50">Explore All Properties</a>
+            <a href="{{ url_for('properties.list_properties', purpose='buy') }}" class="block px-3 py-2 rounded-lg text-base font-semibold text-slate-800 hover:bg-slate-50">Properties for Sale</a>
+            <a href="{{ url_for('properties.list_properties', purpose='rent') }}" class="block px-3 py-2 rounded-lg text-base font-semibold text-slate-800 hover:bg-slate-50">Properties for Rent</a>
+            <a href="{{ url_for('main.about') }}" class="block px-3 py-2 rounded-lg text-base font-semibold text-slate-800 hover:bg-slate-50">About EstateEase</a>
+            <a href="{{ url_for('main.contact') }}" class="block px-3 py-2 rounded-lg text-base font-semibold text-slate-800 hover:bg-slate-50">Contact Us</a>
+            
+            <div class="border-t border-slate-100 pt-3">
+                {% if current_user.is_authenticated %}
+                    <div class="flex items-center gap-3 px-3 py-2 mb-2 bg-slate-50 rounded-xl">
+                        <img src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80' }}" class="w-9 h-9 rounded-full object-cover">
+                        <div>
+                            <p class="text-sm font-bold text-slate-900">{{ current_user.full_name }}</p>
+                            <p class="text-xs text-slate-500">{{ current_user.email }}</p>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('dashboard.dashboard_home') }}" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-800 hover:bg-slate-50">Dashboard</a>
+                    <a href="{{ url_for('properties.my_listings') }}" class="block px-3 py-2 rounded-lg text-sm font-semibold text-slate-800 hover:bg-slate-50">My Listings</a>
+                    <a href="{{ url_for('properties.create_property') }}" class="block px-3 py-2 rounded-lg text-sm font-semibold text-gold font-bold">Post New Listing</a>
+                    <a href="{{ url_for('auth.logout') }}" class="block px-3 py-2 rounded-lg text-sm font-semibold text-rose-600 hover:bg-rose-50">Sign Out</a>
+                {% else %}
+                    <div class="flex flex-col gap-2 pt-2">
+                        <a href="{{ url_for('auth.login') }}" class="w-full text-center py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-sm">Sign In</a>
+                        <a href="{{ url_for('auth.register') }}" class="w-full text-center py-2.5 rounded-xl bg-navy text-white font-semibold text-sm">Register Free</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Flash Notification Messages -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="space-y-3">
+                    {% for category, message in messages %}
+                        {% set alert_classes = {
+                            'success': 'bg-emerald-50 border-emerald-300 text-emerald-900',
+                            'error': 'bg-rose-50 border-rose-300 text-rose-900',
+                            'warning': 'bg-amber-50 border-amber-300 text-amber-900',
+                            'info': 'bg-blue-50 border-blue-300 text-blue-900'
+                        }[category] or 'bg-slate-50 border-slate-300 text-slate-900' %}
+                        
+                        <div class="p-4 rounded-xl border {{ alert_classes }} flex items-center justify-between shadow-sm animate-in fade-in duration-200" role="alert">
+                            <div class="flex items-center gap-3">
+                                {% if category == 'success' %}
+                                    <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600 shrink-0"></i>
+                                {% elif category == 'error' %}
+                                    <i data-lucide="alert-circle" class="w-5 h-5 text-rose-600 shrink-0"></i>
+                                {% elif category == 'warning' %}
+                                    <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 shrink-0"></i>
+                                {% else %}
+                                    <i data-lucide="info" class="w-5 h-5 text-blue-600 shrink-0"></i>
+                                {% endif %}
+                                <span class="text-sm font-medium">{{ message }}</span>
+                            </div>
+                            <button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Global Footer -->
+    <footer class="bg-navy text-slate-300 border-t border-navy-border mt-20 pt-16 pb-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-800">
+                
+                <!-- Brand Info -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gold text-navy flex items-center justify-center font-bold">
+                            <i data-lucide="building-2" class="w-6 h-6 stroke-[2.2]"></i>
+                        </div>
+                        <span class="text-2xl font-bold font-serif text-white tracking-tight">Estate<span class="text-gold">Ease</span></span>
+                    </div>
+                    <p class="text-sm text-slate-400 leading-relaxed max-w-sm">
+                        Curating exceptional architectural estates, luxury waterfront villas, and prime urban penthouses with transparent data and seamless transaction support.
+                    </p>
+                    <div class="flex items-center gap-3 pt-2">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-xs text-gold">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Verified Listings
+                        </span>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-xs text-emerald-400">
+                            <i data-lucide="activity" class="w-3.5 h-3.5"></i> Live Market Data
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Navigation Columns -->
+                <div>
+                    <h4 class="text-white text-sm font-semibold tracking-wider uppercase mb-4">Discover</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li><a href="{{ url_for('properties.list_properties', purpose='buy') }}" class="hover:text-gold transition">Homes for Sale</a></li>
+                        <li><a href="{{ url_for('properties.list_properties', purpose='rent') }}" class="hover:text-gold transition">Rental Residences</a></li>
+                        <li><a href="{{ url_for('properties.list_properties', type='Luxury Villa') }}" class="hover:text-gold transition">Luxury Villas</a></li>
+                        <li><a href="{{ url_for('properties.list_properties', type='Penthouse') }}" class="hover:text-gold transition">Penthouses</a></li>
+                        <li><a href="{{ url_for('properties.list_properties', sort='newest') }}" class="hover:text-gold transition">Newly Listed</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white text-sm font-semibold tracking-wider uppercase mb-4">Platform</h4>
+                    <ul class="space-y-2.5 text-sm">
+                        <li><a href="{{ url_for('main.about') }}" class="hover:text-gold transition">About Us</a></li>
+                        <li><a href="{{ url_for('dashboard.dashboard_home') }}" class="hover:text-gold transition">Agent Dashboard</a></li>
+                        <li><a href="{{ url_for('properties.create_property') }}" class="hover:text-gold transition">List a Property</a></li>
+                        <li><a href="{{ url_for('main.contact') }}" class="hover:text-gold transition">Support & Advisory</a></li>
+                        <li><a href="{{ url_for('auth.demo_login', role='agent') }}" class="hover:text-gold transition text-xs text-yellow-300">Quick Agent Demo</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white text-sm font-semibold tracking-wider uppercase mb-4">Market Newsletter</h4>
+                    <p class="text-xs text-slate-400 mb-3">Receive weekly curations of prime private market opportunities.</p>
+                    <form onsubmit="event.preventDefault(); showToast('Thank you for subscribing to EstateEase Market Dispatch!', 'success');" class="space-y-2">
+                        <input type="email" required placeholder="Enter your email" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-gold">
+                        <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-gold text-navy font-bold text-xs uppercase tracking-wider hover:bg-yellow-400 transition">
+                            Subscribe
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+
+            <!-- Bottom Disclaimer -->
+            <div class="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+                <p>&copy; 2026 EstateEase Technologies Inc. All rights reserved.</p>
+                <div class="flex items-center gap-6">
+                    <span class="text-slate-400 bg-slate-800 px-2.5 py-1 rounded-md text-[11px]">Notice: Demo listings are for showcase purposes only.</span>
+                    <a href="{{ url_for('main.about') }}" class="hover:text-slate-300 transition">Privacy Policy</a>
+                    <a href="{{ url_for('main.about') }}" class="hover:text-slate-300 transition">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Global Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Refresh Lucide on page load
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+

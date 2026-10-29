@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found (404) | EstateEase{% endblock %}
+
+{% block content %}
+<div class="min-h-[60vh] flex items-center justify-center px-4 py-16 text-center">
+    <div class="max-w-md bg-white p-10 rounded-3xl border border-slate-200 shadow-xl space-y-4">
+        <div class="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-2">
+            <i data-lucide="compass" class="w-8 h-8"></i>
+        </div>
+        <span class="text-xs uppercase font-bold tracking-widest text-gold block">Error 404</span>
+        <h1 class="text-2xl font-bold font-serif text-navy">Residence Not Located</h1>
+        <p class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+            The property listing or page you requested cannot be found or may have been unlisted from the platform.
+        </p>
+        <div class="pt-4 flex items-center justify-center gap-3">
+            <a href="{{ url_for('main.index') }}" class="px-5 py-2.5 rounded-xl bg-navy text-white text-xs font-bold uppercase tracking-wider hover:bg-navy-light transition">
+                Return Home
+            </a>
+            <a href="{{ url_for('properties.list_properties') }}" class="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition">
+                Explore Properties
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

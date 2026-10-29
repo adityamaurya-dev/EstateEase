@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}About Us | EstateEase Luxury Real Estate{% endblock %}
+
+{% block content %}
+<div class="bg-navy text-white py-20 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+        <span class="text-xs uppercase font-bold tracking-widest text-gold block mb-3">Our Legacy & Vision</span>
+        <h1 class="text-4xl sm:text-5xl font-bold font-serif tracking-tight">Redefining Prime Residential Real Estate</h1>
+        <p class="text-slate-300 max-w-2xl mx-auto mt-4 text-sm sm:text-base leading-relaxed font-light">
+            Founded to unite architectural connoisseurs with peerless properties through verified market data and bespoke advisory.
+        </p>
+    </div>
+</div>
+
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-bold font-serif text-navy mb-4">Architectural Integrity First</h2>
+            <p class="text-sm text-slate-600 leading-relaxed space-y-3">
+                At EstateEase, we believe a home is an intimate masterpiece. Every villa, penthouse, and estate hosted on our platform is evaluated not merely by square footage, but by light, proportion, craftsmanship, and location prestige.
+            </p>
+            <p class="text-sm text-slate-600 leading-relaxed mt-3">
+                Our technology enables advisors, sellers, and buyers to interact directly with rich multimedia galleries, automated showing scheduling, and comprehensive financial models.
+            </p>
+        </div>
+        <div class="rounded-3xl overflow-hidden shadow-xl aspect-[4/3] bg-slate-100">
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80" alt="Architecture" class="w-full h-full object-cover">
+        </div>
+    </div>
+
+    <!-- Core Pillars -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+        <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <div class="w-10 h-10 rounded-xl bg-gold-light text-yellow-800 flex items-center justify-center mb-4">
+                <i data-lucide="shield" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-navy text-base mb-1">Strict Curation</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">Only verified listings with legitimate titles and accurate documentation are showcased.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <div class="w-10 h-10 rounded-xl bg-navy text-gold flex items-center justify-center mb-4">
+                <i data-lucide="zap" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-navy text-base mb-1">Instant Direct Inquiry</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">Tour schedules deliver directly to the certified lead agent without lag.</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-4">
+                <i data-lucide="award" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-navy text-base mb-1">Full Ownership Controls</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">Agents and homeowners maintain complete CRUD authority over their portfolios.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

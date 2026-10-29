@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}Executive Analytics Dashboard | EstateEase{% endblock %}
+
+{% block content %}
+<div class="bg-white border-b border-slate-200/80 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <nav class="flex items-center gap-2 text-xs text-slate-400 mb-2 font-medium">
+                    <a href="{{ url_for('main.index') }}" class="hover:text-gold transition">Home</a>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                    <span class="text-slate-700">Analytics Dashboard</span>
+                </nav>
+                <h1 class="text-3xl font-bold font-serif text-navy tracking-tight">Executive Operations Dashboard</h1>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Live market analytics, inventory performance, and client inquiries from actual database records.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ url_for('properties.create_property') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gold hover:bg-gold-hover text-navy font-bold text-xs uppercase tracking-wider transition shadow-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Post Listing
+                </a>
+                <a href="{{ url_for('properties.my_listings') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-navy text-white font-bold text-xs uppercase tracking-wider hover:bg-navy-light transition shadow-sm">
+                    <i data-lucide="layout-list" class="w-4 h-4"></i> My Portfolio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    
+    <!-- 1. LIVE DATABASE KPI METRIC COUNTERS -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        
+        <!-- Total Properties -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-navy transition">
+            <div class="w-9 h-9 rounded-xl bg-navy/5 text-navy flex items-center justify-center mb-3">
+                <i data-lucide="building-2" class="w-5 h-5"></i>
+            </div>
+            <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Total Properties</span>
+            <span class="text-2xl font-extrabold text-navy font-serif" data-counter-target="{{ total_properties }}">{{ total_properties }}</span>
+            <span class="text-[10px] text-slate-400 block mt-1">Live inventory</span>
+        </div>
+
+        <!-- Available Properties -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-emerald-500 transition">
+            <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
+                <i data-lucide="check-circle" class="w-5 h-5"></i>
+            </div>
+            <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Available</span>
+            <span class="text-2xl font-extrabold text-emerald-600 font-serif" data-counter-target="{{ available_properties }}">{{ available_properties }}</span>
+            <span class="text-[10px] text-emerald-600 block mt-1">Active market</span>
+        </div>
+
+        <!-- Pending Properties -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-amber-500 transition">
+            <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3">
+                <i data-lucide="clock" class="w-5 h-5"></i>
+            </div>
+            <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Pending Deals</span>
+            <span class="text-2xl font-extrabold text-amber-600 font-serif" data-counter-target="{{ pending_properties }}">{{ pending_properties }}</span>
+            <span class="text-[10px] text-amber-600 block mt-1">Under escrow</span>
+        </div>
+
+        <!-- Sold Properties -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-blue-500 transition">
+            <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+                <i data-lucide="award" class="w-5 h-5"></i>
+            </div>
+            <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Sold Estates</span>
+            <span class="text-2xl font-extrabold text-blue-600 font-serif" data-counter-target="{{ sold_properties }}">{{ sold_properties }}</span>
+            <span class="text-[10px] text-blue-600 block mt-1">Closed purchases</span>
+        </div>
+
+        <!-- Rented Properties -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-purple-500 transition">
+            <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3">
+                <i data-lucide="key" class="w-5 h-5"></i>
+            </div>
+            <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Rented</span>
+            <span class="text-2xl font-extrabold text-purple-600 font-serif" data-counter-target="{{ rented_properties }}">{{ rented_properties }}</span>
+            <span class="text-[10px] text-purple-600 block mt-1">Active leases</span>
+        </div>
+
+        <!-- Average Price / Inquiries -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-gold transition">
+            <div class="w-9 h-9 rounded-xl bg-gold-light text-yellow-800 flex items-center justify-center mb-3">
+                <i data-lucide="message-square" class="w-5 h-5"></i>
+            </div>
+            <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold block mb-1">Total Inquiries</span>
+            <span class="text-2xl font-extrabold text-gold font-serif" data-counter-target="{{ total_inquiries }}">{{ total_inquiries }}</span>
+            <span class="text-[10px] text-slate-400 block mt-1">Verified leads</span>
+        </div>
+
+    </div>
+
+    <!-- 2. INVENTORY DISTRIBUTION & QUICK STATS -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Category Distribution -->
+        <div class="lg:col-span-1 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-navy text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i data-lucide="pie-chart" class="w-4 h-4 text-gold"></i> Inventory Breakdown
+            </h3>
+            
+            <div class="space-y-3">
+                {% for ptype, count in type_distribution %}
+                    {% set pct = ((count / total_properties) * 100)|round(0)|int if total_properties > 0 else 0 %}
+                    <div>
+                        <div class="flex items-center justify-between text-xs mb-1 font-semibold">
+                            <span class="text-slate-700">{{ ptype }}</span>
+                            <span class="text-slate-500">{{ count }} ({{ pct }}%)</span>
+                        </div>
+                        <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                            <div class="h-full bg-navy rounded-full transition-all duration-500" style="width: {{ pct }}%"></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="text-slate-500">Average For-Sale Price:</span>
+                <span class="font-bold text-navy font-serif text-sm">${{ avg_price|number }}</span>
+            </div>
+        </div>
+
+        <!-- Recent Inquiries & Showing Requests -->
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
+            <div>
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-navy text-sm uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="inbox" class="w-4 h-4 text-gold"></i> Recent Client Inquiries
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Showing requests and lead communications.</p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                        {{ total_inquiries }} Leads
+                    </span>
+                </div>
+
+                {% if inquiries %}
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-b border-slate-100 font-bold">
+                                <tr>
+                                    <th class="py-3 px-5">Lead / Client</th>
+                                    <th class="py-3 px-4">Property</th>
+                                    <th class="py-3 px-4">Inquiry Type</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-5 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                {% for inq in inquiries %}
+                                    <tr class="hover:bg-slate-50 transition">
+                                        <td class="py-3 px-5">
+                                            <span class="font-bold text-slate-900 block">{{ inq.name }}</span>
+                                            <span class="text-slate-400 text-[11px]">{{ inq.email }} • {{ inq.phone }}</span>
+                                        </td>
+                                        <td class="py-3 px-4 max-w-[180px] truncate">
+                                            <span class="text-slate-700 font-medium truncate block">{{ inq.property.title if inq.property else 'Unknown' }}</span>
+                                            <span class="text-slate-400 text-[10px]">{{ inq.created_at.strftime('%b %d, %Y') }}</span>
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ 'bg-blue-50 text-blue-700' if inq.inquiry_type == 'Tour Request' else 'bg-slate-100 text-slate-700' }}">
+                                                {{ inq.inquiry_type }}
+                                            </span>
+                                            {% if inq.preferred_date %}
+                                                <span class="block text-[10px] text-slate-500 mt-0.5">{{ inq.preferred_date }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="py-3 px-4">
+                                            <form action="{{ url_for('dashboard.update_inquiry_status', inquiry_id=inq.id) }}" method="POST">
+                                                <select name="status" onchange="this.form.submit()" class="text-[11px] font-semibold rounded-lg px-2 py-0.5 border border-slate-200 focus:outline-none {{ 'bg-emerald-50 text-emerald-800' if inq.status == 'Resolved' else ('bg-blue-50 text-blue-800' if inq.status == 'Contacted' else 'bg-amber-50 text-amber-800') }}">
+                                                    <option value="Pending" {{ 'selected' if inq.status == 'Pending' }}>Pending</option>
+                                                    <option value="Contacted" {{ 'selected' if inq.status == 'Contacted' }}>Contacted</option>
+                                                    <option value="Resolved" {{ 'selected' if inq.status == 'Resolved' }}>Resolved</option>
+                                                </select>
+                                            </form>
+                                        </td>
+                                        <td class="py-3 px-5 text-right whitespace-nowrap">
+                                            <a href="mailto:{{ inq.email }}?subject=Re: Inquiring about {{ inq.property.title if inq.property else 'Property' }}" class="inline-flex items-center gap-1 text-[11px] font-bold text-navy hover:text-gold transition">
+                                                <i data-lucide="reply" class="w-3.5 h-3.5"></i> Reply
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="p-8 text-center text-xs text-slate-400">
+                        No inquiries received yet. When visitors request showings or send messages, they will appear here.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 3. RECENT DATABASE LISTINGS TABLE -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <h3 class="font-bold text-navy text-sm uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="layers" class="w-4 h-4 text-gold"></i> Recent Database Listings
+                </h3>
+                <p class="text-xs text-slate-400 mt-0.5">Real records currently active in the SQLite database.</p>
+            </div>
+            <a href="{{ url_for('properties.list_properties') }}" class="text-xs font-bold text-navy hover:text-gold transition flex items-center gap-1">
+                View All {{ total_properties }} Listings <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider border-b border-slate-100 font-bold">
+                    <tr>
+                        <th class="py-3.5 px-6">Property</th>
+                        <th class="py-3.5 px-4">Price</th>
+                        <th class="py-3.5 px-4">Type</th>
+                        <th class="py-3.5 px-4">Status</th>
+                        <th class="py-3.5 px-4">Owner / Agent</th>
+                        <th class="py-3.5 px-6 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for prop in recent_listings %}
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="py-3.5 px-6">
+                                <div class="flex items-center gap-3">
+                                    <img src="{{ prop.primary_image_url }}" alt="{{ prop.title }}" class="w-12 h-10 rounded-lg object-cover bg-slate-100 shrink-0">
+                                    <div>
+                                        <a href="{{ url_for('properties.show_property', property_id=prop.id) }}" class="font-bold text-slate-900 hover:text-gold transition line-clamp-1">
+                                            {{ prop.title }}
+                                        </a>
+                                        <p class="text-[11px] text-slate-400">{{ prop.city }}, {{ prop.state }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
+                                {{ prop.formatted_price }}
+                            </td>
+                            <td class="py-3.5 px-4 whitespace-nowrap text-slate-600">
+                                {{ prop.property_type }}
+                            </td>
+                            <td class="py-3.5 px-4 whitespace-nowrap">
+                                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider {{ 'badge-emerald' if prop.status == 'Available' else ('badge-amber' if prop.status == 'Pending' else 'badge-blue') }}">
+                                    {{ prop.status }}
+                                </span>
+                            </td>
+                            <td class="py-3.5 px-4 whitespace-nowrap text-slate-600">
+                                {{ prop.owner.full_name if prop.owner else 'EstateEase Agent' }}
+                            </td>
+                            <td class="py-3.5 px-6 whitespace-nowrap text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="{{ url_for('properties.show_property', property_id=prop.id) }}" class="p-1 rounded-lg text-slate-400 hover:text-navy transition" title="View">
+                                        <i data-lucide="eye" class="w-4 h-4"></i>
+                                    </a>
+                                    {% if current_user.id == prop.user_id or current_user.role == 'admin' %}
+                                        <a href="{{ url_for('properties.edit_property', property_id=prop.id) }}" class="p-1 rounded-lg text-slate-400 hover:text-navy transition" title="Edit">
+                                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+

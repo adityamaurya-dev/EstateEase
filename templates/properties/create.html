@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Post New Property Listing | EstateEase{% endblock %}
+
+{% block content %}
+<div class="bg-white border-b border-slate-200/80 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav class="flex items-center gap-2 text-xs text-slate-400 mb-2 font-medium">
+            <a href="{{ url_for('main.index') }}" class="hover:text-gold transition">Home</a>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            <a href="{{ url_for('properties.my_listings') }}" class="hover:text-gold transition">My Listings</a>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            <span class="text-slate-700">Add Listing</span>
+        </nav>
+        <h1 class="text-3xl font-bold font-serif text-navy tracking-tight">Create Property Listing</h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">Publish a premier residential or commercial asset to high-net-worth buyers and tenants.</p>
+    </div>
+</div>
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <form action="{{ url_for('properties.create_property') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
+        
+        <!-- SECTION 1: BASIC LISTING INFORMATION -->
+        <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h3 class="text-lg font-bold font-serif text-navy">1. Listing Overview</h3>
+                <p class="text-xs text-slate-500">Provide the core identity and classification of the property.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Title -->
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Property Title <span class="text-rose-500">*</span></label>
+                    <input type="text" name="title" required value="{{ form_data.title or '' }}" placeholder="e.g. The Bel Air Hilltop Modernist Pavilion" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+
+                <!-- Purpose: Buy or Rent -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Listing Purpose <span class="text-rose-500">*</span></label>
+                    <select name="purpose" required class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy bg-white">
+                        <option value="buy" {{ 'selected' if form_data.purpose == 'buy' }}>For Sale (Purchase)</option>
+                        <option value="rent" {{ 'selected' if form_data.purpose == 'rent' }}>For Rent (Lease)</option>
+                    </select>
+                </div>
+
+                <!-- Property Type -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Property Type <span class="text-rose-500">*</span></label>
+                    <select name="property_type" required class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy bg-white">
+                        {% for ptype in property_types %}
+                            <option value="{{ ptype }}" {{ 'selected' if form_data.property_type == ptype }}>{{ ptype }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Price -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Listing Price ($ USD) <span class="text-rose-500">*</span></label>
+                    <input type="number" step="any" min="1" name="price" required value="{{ form_data.price or '' }}" placeholder="e.g. 3850000" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Status <span class="text-rose-500">*</span></label>
+                    <select name="status" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy bg-white">
+                        <option value="Available" {{ 'selected' if form_data.status == 'Available' }}>Available</option>
+                        <option value="Pending" {{ 'selected' if form_data.status == 'Pending' }}>Pending Offer / Escrow</option>
+                        <option value="Sold" {{ 'selected' if form_data.status == 'Sold' }}>Sold</option>
+                        <option value="Rented" {{ 'selected' if form_data.status == 'Rented' }}>Rented</option>
+                    </select>
+                </div>
+
+                <!-- Description -->
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Detailed Architectural Narrative <span class="text-rose-500">*</span></label>
+                    <textarea name="description" rows="5" required placeholder="Describe interior appointments, architectural vision, views, and lifestyle amenities..." class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">{{ form_data.description or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: SPECIFICATIONS & DIMENSIONS -->
+        <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h3 class="text-lg font-bold font-serif text-navy">2. Specifications & Dimensions</h3>
+                <p class="text-xs text-slate-500">Provide measurements and room counts.</p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Bedrooms <span class="text-rose-500">*</span></label>
+                    <input type="number" min="0" name="bedrooms" required value="{{ form_data.bedrooms or '3' }}" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Bathrooms <span class="text-rose-500">*</span></label>
+                    <input type="number" step="0.5" min="0" name="bathrooms" required value="{{ form_data.bathrooms or '2.5' }}" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Area (Sq Ft) <span class="text-rose-500">*</span></label>
+                    <input type="number" min="50" name="area_sqft" required value="{{ form_data.area_sqft or '' }}" placeholder="e.g. 4200" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Garage Bays</label>
+                    <input type="number" min="0" name="garages" value="{{ form_data.garages or '2' }}" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Year Built</label>
+                    <input type="number" name="year_built" value="{{ form_data.year_built or '2023' }}" placeholder="2023" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+
+                <div class="sm:col-span-3 flex items-center pt-6">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" name="featured" value="1" {{ 'checked' if form_data.featured }} class="w-4 h-4 text-navy rounded border-slate-300 focus:ring-navy">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Feature this listing on the homepage showcase</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: LOCATION DETAILS -->
+        <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h3 class="text-lg font-bold font-serif text-navy">3. Location Address</h3>
+                <p class="text-xs text-slate-500">Accurate geographic coordinates and address for buyers.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-3">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Street Address <span class="text-rose-500">*</span></label>
+                    <input type="text" name="address" required value="{{ form_data.address or '' }}" placeholder="e.g. 742 Evergreen Terrace" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">City <span class="text-rose-500">*</span></label>
+                    <input type="text" name="city" required value="{{ form_data.city or '' }}" placeholder="e.g. Beverly Hills" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">State / Province <span class="text-rose-500">*</span></label>
+                    <input type="text" name="state" required value="{{ form_data.state or '' }}" placeholder="e.g. CA" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Zip / Postal Code <span class="text-rose-500">*</span></label>
+                    <input type="text" name="zip_code" required value="{{ form_data.zip_code or '' }}" placeholder="e.g. 90210" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: LUXURY AMENITIES CHECKLIST -->
+        <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h3 class="text-lg font-bold font-serif text-navy">4. Luxury Amenities & Features</h3>
+                <p class="text-xs text-slate-500">Select all amenities available at this property.</p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {% for am in standard_amenities %}
+                    <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:border-gold cursor-pointer transition text-xs font-semibold text-slate-700">
+                        <input type="checkbox" name="amenities" value="{{ am.label }}" class="w-4 h-4 text-navy rounded border-slate-300 focus:ring-navy">
+                        <span>{{ am.label }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- SECTION 5: IMAGE GALLERY UPLOAD -->
+        <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h3 class="text-lg font-bold font-serif text-navy">5. High-Resolution Photo Gallery</h3>
+                <p class="text-xs text-slate-500">Upload multiple photos. Supported formats: PNG, JPG, JPEG, WEBP. Maximum 16MB total.</p>
+            </div>
+
+            <!-- Upload drag & drop zone -->
+            <div class="border-2 border-dashed border-slate-300 rounded-2xl p-8 text-center hover:border-gold transition bg-slate-50">
+                <i data-lucide="upload-cloud" class="w-10 h-10 text-slate-400 mx-auto mb-3"></i>
+                <h4 class="text-sm font-bold text-slate-800">Choose images to upload</h4>
+                <p class="text-xs text-slate-500 mt-1 mb-4">Select multiple photos from your device.</p>
+                <input type="file" name="images" id="property-images-input" multiple accept="image/*" class="text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-navy file:text-white hover:file:bg-navy-light cursor-pointer">
+            </div>
+
+            <!-- Live Thumbnail Preview Grid -->
+            <div id="image-preview-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+
+            <!-- Custom image URL option (for testing convenience) -->
+            <div class="pt-4 border-t border-slate-100">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Or Paste a Direct Image URL (Optional)</label>
+                <input type="url" name="custom_image_url" placeholder="https://images.unsplash.com/photo-..." class="w-full px-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                <p class="text-[11px] text-slate-400 mt-1">Useful for quickly adding an existing high-res architectural photograph.</p>
+            </div>
+        </div>
+
+        <!-- SECTION 6: CONTACT INFORMATION -->
+        <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+            <div class="border-b border-slate-100 pb-4">
+                <h3 class="text-lg font-bold font-serif text-navy">6. Listing Advisor Contact</h3>
+                <p class="text-xs text-slate-500">Direct contact details shown to prospective buyers.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Advisor Name</label>
+                    <input type="text" name="contact_name" value="{{ current_user.full_name }}" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Email Address</label>
+                    <input type="email" name="contact_email" value="{{ current_user.email }}" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Phone Number</label>
+                    <input type="tel" name="contact_phone" value="{{ current_user.phone or '' }}" placeholder="+1 (555) 000-0000" class="w-full px-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Actions -->
+        <div class="flex items-center justify-end gap-4 pt-4">
+            <a href="{{ url_for('properties.my_listings') }}" class="px-6 py-3 rounded-xl border border-slate-300 text-slate-700 font-bold text-xs uppercase tracking-wider hover:bg-slate-50 transition">
+                Cancel
+            </a>
+            <button type="submit" class="px-8 py-3.5 rounded-xl bg-gold hover:bg-gold-hover text-navy font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-gold/20 flex items-center gap-2">
+                <i data-lucide="check-circle" class="w-4 h-4"></i> Publish Listing
+            </button>
+        </div>
+
+    </form>
+</div>
+{% endblock %}
+

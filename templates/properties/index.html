@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Properties | EstateEase Luxury Portfolio{% endblock %}
+
+{% block content %}
+<div class="bg-white border-b border-slate-200/80 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <nav class="flex items-center gap-2 text-xs text-slate-400 mb-2 font-medium">
+                    <a href="{{ url_for('main.index') }}" class="hover:text-gold transition">Home</a>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                    <span class="text-slate-700">Explore Properties</span>
+                </nav>
+                <h1 class="text-3xl font-bold font-serif text-navy tracking-tight">Luxury Properties Portfolio</h1>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Discover premier architectural estates and residences curated across prime markets.</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-semibold px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                    <span class="font-bold text-navy">{{ total_results }}</span> Properties Found
+                </span>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('properties.create_property') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gold text-navy font-bold text-xs uppercase tracking-wider hover:bg-gold-hover transition">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Add Listing
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+        
+        <!-- SIDEBAR FILTER DRAWER -->
+        <aside class="lg:col-span-1 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm sticky top-24">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                <div class="flex items-center gap-2 font-bold text-slate-900 text-sm">
+                    <i data-lucide="sliders-horizontal" class="w-4 h-4 text-gold"></i> Filters
+                </div>
+                {% if active_filters.q or active_filters.purpose or active_filters.type or active_filters.city or active_filters.status or active_filters.min_price or active_filters.max_price or active_filters.bedrooms or active_filters.amenity %}
+                    <a href="{{ url_for('properties.list_properties') }}" class="text-xs text-rose-600 hover:underline font-semibold flex items-center gap-1">
+                        <i data-lucide="rotate-ccw" class="w-3 h-3"></i> Clear All
+                    </a>
+                {% endif %}
+            </div>
+
+            <form action="{{ url_for('properties.list_properties') }}" method="GET" id="filter-form" class="space-y-5">
+                
+                <!-- Keyword / Location -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Keyword / Location</label>
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+                        <input type="text" name="q" value="{{ active_filters.q }}" placeholder="City, zip, address..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                    </div>
+                </div>
+
+                <!-- Purpose: Buy or Rent -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Listing Purpose</label>
+                    <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl">
+                        <label class="text-center">
+                            <input type="radio" name="purpose" value="" class="hidden peer" {{ 'checked' if not active_filters.purpose }}>
+                            <span class="block py-1.5 text-xs font-semibold rounded-lg peer-checked:bg-white peer-checked:text-navy peer-checked:shadow-sm text-slate-600 cursor-pointer transition">All</span>
+                        </label>
+                        <label class="text-center">
+                            <input type="radio" name="purpose" value="buy" class="hidden peer" {{ 'checked' if active_filters.purpose == 'buy' }}>
+                            <span class="block py-1.5 text-xs font-semibold rounded-lg peer-checked:bg-white peer-checked:text-navy peer-checked:shadow-sm text-slate-600 cursor-pointer transition">Buy</span>
+                        </label>
+                        <label class="text-center">
+                            <input type="radio" name="purpose" value="rent" class="hidden peer" {{ 'checked' if active_filters.purpose == 'rent' }}>
+                            <span class="block py-1.5 text-xs font-semibold rounded-lg peer-checked:bg-white peer-checked:text-navy peer-checked:shadow-sm text-slate-600 cursor-pointer transition">Rent</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Property Type -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Property Type</label>
+                    <select name="type" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy bg-white">
+                        <option value="All">All Property Types</option>
+                        {% for ptype in property_types %}
+                            <option value="{{ ptype }}" {{ 'selected' if active_filters.type == ptype }}>{{ ptype }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- City / Market -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">City / Market</label>
+                    <select name="city" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy bg-white">
+                        <option value="All">All Cities</option>
+                        {% for c in available_cities %}
+                            <option value="{{ c }}" {{ 'selected' if active_filters.city == c }}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Price Range -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Price Range ($)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" name="min_price" value="{{ active_filters.min_price }}" placeholder="Min" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                        <input type="number" name="max_price" value="{{ active_filters.max_price }}" placeholder="Max" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                    </div>
+                </div>
+
+                <!-- Bedrooms & Bathrooms -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Bedrooms</label>
+                        <select name="bedrooms" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy bg-white">
+                            <option value="Any">Any</option>
+                            <option value="1" {{ 'selected' if active_filters.bedrooms == '1' }}>1+</option>
+                            <option value="2" {{ 'selected' if active_filters.bedrooms == '2' }}>2+</option>
+                            <option value="3" {{ 'selected' if active_filters.bedrooms == '3' }}>3+</option>
+                            <option value="4" {{ 'selected' if active_filters.bedrooms == '4' }}>4+</option>
+                            <option value="5" {{ 'selected' if active_filters.bedrooms == '5' }}>5+</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Bathrooms</label>
+                        <select name="bathrooms" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy bg-white">
+                            <option value="Any">Any</option>
+                            <option value="1" {{ 'selected' if active_filters.bathrooms == '1' }}>1+</option>
+                            <option value="2" {{ 'selected' if active_filters.bathrooms == '2' }}>2+</option>
+                            <option value="3" {{ 'selected' if active_filters.bathrooms == '3' }}>3+</option>
+                            <option value="4" {{ 'selected' if active_filters.bathrooms == '4' }}>4+</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Listing Status -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Listing Status</label>
+                    <select name="status" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy bg-white">
+                        <option value="All">All Statuses</option>
+                        <option value="Available" {{ 'selected' if active_filters.status == 'Available' }}>Available</option>
+                        <option value="Pending" {{ 'selected' if active_filters.status == 'Pending' }}>Pending</option>
+                        <option value="Sold" {{ 'selected' if active_filters.status == 'Sold' }}>Sold</option>
+                        <option value="Rented" {{ 'selected' if active_filters.status == 'Rented' }}>Rented</option>
+                    </select>
+                </div>
+
+                <!-- Amenity Filter -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Desired Amenity</label>
+                    <select name="amenity" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy bg-white">
+                        <option value="">Any Amenity</option>
+                        {% for am in standard_amenities %}
+                            <option value="{{ am.label }}" {{ 'selected' if active_filters.amenity == am.label }}>{{ am.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Hidden Sort to preserve sorting -->
+                <input type="hidden" name="sort" id="sidebar-sort-input" value="{{ active_filters.sort }}">
+
+                <!-- Apply Filters Button -->
+                <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-navy text-white text-xs font-bold uppercase tracking-wider hover:bg-navy-light transition shadow-sm flex items-center justify-center gap-2">
+                    <i data-lucide="filter" class="w-4 h-4"></i> Apply Filters
+                </button>
+            </form>
+        </aside>
+
+        <!-- MAIN RESULTS CONTAINER -->
+        <main class="lg:col-span-3">
+            
+            <!-- Sort & View Controls Bar -->
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                
+                <!-- Active Filter Tags / Count -->
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs font-bold text-slate-700">Sort By:</span>
+                    <select onchange="updateSorting(this.value)" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-1 focus:ring-navy">
+                        <option value="newest" {{ 'selected' if active_filters.sort == 'newest' }}>Newest Listings</option>
+                        <option value="price_asc" {{ 'selected' if active_filters.sort == 'price_asc' }}>Price: Low to High</option>
+                        <option value="price_desc" {{ 'selected' if active_filters.sort == 'price_desc' }}>Price: High to Low</option>
+                        <option value="area_desc" {{ 'selected' if active_filters.sort == 'area_desc' }}>Living Area: Largest</option>
+                        <option value="beds_desc" {{ 'selected' if active_filters.sort == 'beds_desc' }}>Bedrooms: Most</option>
+                    </select>
+                </div>
+
+                <!-- Active Filter Pills (Click to clear) -->
+                <div class="flex items-center gap-1.5 flex-wrap text-[11px]">
+                    {% if active_filters.q %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-medium">
+                            "{{ active_filters.q }}"
+                            <a href="{{ url_for('properties.list_properties', purpose=active_filters.purpose, type=active_filters.type, status=active_filters.status, sort=active_filters.sort) }}" class="text-slate-400 hover:text-rose-600">×</a>
+                        </span>
+                    {% endif %}
+                    {% if active_filters.purpose %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-medium uppercase">
+                            {{ active_filters.purpose }}
+                            <a href="{{ url_for('properties.list_properties', q=active_filters.q, type=active_filters.type, status=active_filters.status, sort=active_filters.sort) }}" class="text-slate-400 hover:text-rose-600">×</a>
+                        </span>
+                    {% endif %}
+                    {% if active_filters.type and active_filters.type != 'All' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-medium">
+                            {{ active_filters.type }}
+                            <a href="{{ url_for('properties.list_properties', q=active_filters.q, purpose=active_filters.purpose, status=active_filters.status, sort=active_filters.sort) }}" class="text-slate-400 hover:text-rose-600">×</a>
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- PROPERTIES LISTING GRID -->
+            {% if properties %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for prop in properties %}
+                        <article class="property-card bg-white rounded-2xl overflow-hidden border border-slate-200/90 flex flex-col h-full shadow-sm">
+                            
+                            <!-- Image Container -->
+                            <div class="relative aspect-[16/10] overflow-hidden bg-slate-100">
+                                <img src="{{ prop.primary_image_url }}" alt="{{ prop.title }}" class="img-zoom w-full h-full object-cover">
+                                
+                                <div class="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ 'badge-navy' if prop.purpose == 'buy' else 'badge-emerald' }}">
+                                        {{ 'For Sale' if prop.purpose == 'buy' else 'For Rent' }}
+                                    </span>
+                                    {% if prop.status != 'Available' %}
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider badge-amber">
+                                            {{ prop.status }}
+                                        </span>
+                                    {% endif %}
+                                    {% if prop.is_demo %}
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-900/70 text-slate-200 backdrop-blur-sm">
+                                            Demo
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Favorite Button -->
+                                <button type="button" data-property-id="{{ prop.id }}" class="favorite-toggle-btn absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center {{ 'text-rose-500 fill-rose-500' if prop.id in user_fav_ids else 'text-slate-400' }} hover:text-rose-500 shadow-md transition z-10">
+                                    <i data-lucide="heart" class="w-4 h-4"></i>
+                                </button>
+
+                                <div class="absolute bottom-3 left-3 bg-navy/90 text-white backdrop-blur-md px-3 py-1.5 rounded-xl font-bold text-sm shadow-md">
+                                    {{ prop.formatted_price }}
+                                </div>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="p-5 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center gap-2 text-xs text-slate-400 mb-1 font-medium">
+                                        <span class="text-gold font-semibold uppercase tracking-wider">{{ prop.property_type }}</span>
+                                        <span>•</span>
+                                        <span>{{ prop.city }}, {{ prop.state }}</span>
+                                    </div>
+
+                                    <h3 class="text-base font-bold text-slate-900 hover:text-gold transition line-clamp-1 mb-2">
+                                        <a href="{{ url_for('properties.show_property', property_id=prop.id) }}">{{ prop.title }}</a>
+                                    </h3>
+
+                                    <p class="text-slate-500 text-xs line-clamp-2 leading-relaxed mb-4">
+                                        {{ prop.description }}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <!-- Specs -->
+                                    <div class="grid grid-cols-3 gap-2 py-2.5 border-t border-b border-slate-100 text-slate-600 text-xs">
+                                        <div class="flex items-center gap-1.5">
+                                            <i data-lucide="bed" class="w-3.5 h-3.5 text-slate-400"></i>
+                                            <span class="font-semibold">{{ prop.bedrooms }}</span> Beds
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <i data-lucide="bath" class="w-3.5 h-3.5 text-slate-400"></i>
+                                            <span class="font-semibold">{{ prop.bathrooms }}</span> Baths
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <i data-lucide="maximize-2" class="w-3.5 h-3.5 text-slate-400"></i>
+                                            <span class="font-semibold">{{ prop.area_sqft|number }}</span> sqft
+                                        </div>
+                                    </div>
+
+                                    <!-- Footer -->
+                                    <div class="mt-3 flex items-center justify-between">
+                                        <span class="text-[11px] text-slate-400">{{ prop.created_at.strftime('%b %d, %Y') }}</span>
+                                        <a href="{{ url_for('properties.show_property', property_id=prop.id) }}" class="inline-flex items-center gap-1 text-xs font-bold text-navy hover:text-gold transition">
+                                            Details <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                                        </a>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+
+                <!-- PAGINATION CONTROLS -->
+                {% if pagination.pages > 1 %}
+                    <div class="mt-12 flex items-center justify-center gap-2">
+                        {% if pagination.has_prev %}
+                            <a href="{{ url_for('properties.list_properties', page=pagination.prev_num, **active_filters) }}" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50">
+                                Previous
+                            </a>
+                        {% endif %}
+
+                        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                            {% if p %}
+                                {% if p == pagination.page %}
+                                    <span class="w-9 h-9 rounded-xl bg-navy text-white text-xs font-bold flex items-center justify-center">{{ p }}</span>
+                                {% else %}
+                                    <a href="{{ url_for('properties.list_properties', page=p, **active_filters) }}" class="w-9 h-9 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-center">{{ p }}</a>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-slate-400 px-1">...</span>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if pagination.has_next %}
+                            <a href="{{ url_for('properties.list_properties', page=pagination.next_num, **active_filters) }}" class="px-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50">
+                                Next
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <!-- INFORMATIVE EMPTY STATE -->
+                <div class="bg-white rounded-3xl p-12 text-center border border-slate-200/80 shadow-sm max-w-lg mx-auto my-8">
+                    <div class="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="search-x" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="text-xl font-bold font-serif text-slate-900 mb-2">No Matching Properties Found</h3>
+                    <p class="text-xs sm:text-sm text-slate-500 mb-6 leading-relaxed">
+                        We couldn't find any properties matching your current filter criteria. Try broadening your search or resetting all applied filters.
+                    </p>
+                    <div class="flex items-center justify-center gap-3">
+                        <a href="{{ url_for('properties.list_properties') }}" class="px-5 py-2.5 rounded-xl bg-navy text-white text-xs font-bold uppercase tracking-wider hover:bg-navy-light transition">
+                            Reset All Filters
+                        </a>
+                        {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('properties.create_property') }}" class="px-5 py-2.5 rounded-xl bg-gold text-navy text-xs font-bold uppercase tracking-wider hover:bg-gold-hover transition">
+                                Add a Listing
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateSorting(sortVal) {
+        document.getElementById('sidebar-sort-input').value = sortVal;
+        document.getElementById('filter-form').submit();
+    }
+</script>
+{% endblock %}
+

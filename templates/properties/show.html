@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}{{ property.title }} | EstateEase Luxury Living{% endblock %}
+
+{% block content %}
+<!-- Top Breadcrumb & Actions Bar -->
+<div class="bg-white border-b border-slate-200/80 py-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <nav class="flex items-center gap-2 text-xs text-slate-400 font-medium">
+            <a href="{{ url_for('main.index') }}" class="hover:text-gold transition">Home</a>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            <a href="{{ url_for('properties.list_properties') }}" class="hover:text-gold transition">Properties</a>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            <span class="text-slate-700 truncate max-w-xs">{{ property.title }}</span>
+        </nav>
+
+        <div class="flex items-center gap-2">
+            <!-- Favorite button -->
+            <button type="button" data-property-id="{{ property.id }}" class="favorite-toggle-btn inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold {{ 'text-rose-500 fill-rose-500' if is_favorited else 'text-slate-600' }} hover:border-slate-300 transition">
+                <i data-lucide="heart" class="w-4 h-4"></i> Save
+            </button>
+
+            <!-- Share button -->
+            <button type="button" onclick="navigator.clipboard.writeText(window.location.href); showToast('Property URL copied to clipboard!', 'info');" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
+                <i data-lucide="share-2" class="w-4 h-4"></i> Share
+            </button>
+
+            <!-- Owner / Admin Controls -->
+            {% if current_user.is_authenticated and (current_user.id == property.user_id or current_user.role == 'admin') %}
+                <a href="{{ url_for('properties.edit_property', property_id=property.id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-navy text-white text-xs font-bold uppercase tracking-wider hover:bg-navy-light transition">
+                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Edit Listing
+                </a>
+                
+                <form id="delete-property-form-{{ property.id }}" action="{{ url_for('properties.delete_property', property_id=property.id) }}" method="POST" class="inline">
+                    <button type="button" onclick="confirmDeleteModal('delete-property-form-{{ property.id }}', '{{ property.title|replace('\'', '\\\'') }}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 text-xs font-bold uppercase tracking-wider hover:bg-rose-100 transition border border-rose-200">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Title and Price Banner -->
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
+        <div>
+            <div class="flex items-center gap-2 mb-2">
+                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ 'badge-navy' if property.purpose == 'buy' else 'badge-emerald' }}">
+                    {{ 'For Sale' if property.purpose == 'buy' else 'For Rent' }}
+                </span>
+                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ 'badge-emerald' if property.status == 'Available' else 'badge-amber' }}">
+                    {{ property.status }}
+                </span>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                    {{ property.property_type }}
+                </span>
+                {% if property.is_demo %}
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-900 text-slate-200">
+                        Verified Demo Listing
+                    </span>
+                {% endif %}
+            </div>
+
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-navy tracking-tight">{{ property.title }}</h1>
+            
+            <p class="flex items-center gap-1.5 text-sm text-slate-500 mt-2">
+                <i data-lucide="map-pin" class="w-4 h-4 text-gold shrink-0"></i>
+                <span>{{ property.address }}, {{ property.city }}, {{ property.state }} {{ property.zip_code }}, {{ property.country }}</span>
+            </p>
+        </div>
+
+        <div class="text-left lg:text-right bg-white lg:bg-transparent p-5 lg:p-0 rounded-2xl border lg:border-none border-slate-200 shadow-sm lg:shadow-none">
+            <span class="text-xs uppercase tracking-wider text-slate-400 font-bold block">Listing Price</span>
+            <span class="text-3xl sm:text-4xl font-extrabold text-navy font-serif tracking-tight text-gold">
+                {{ property.formatted_price }}
+            </span>
+            {% if property.price_per_sqft > 0 %}
+                <span class="block text-xs text-slate-500 mt-0.5 font-medium">Approx. ${{ property.price_per_sqft|number }}/sq ft</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- GALLERY SECTION -->
+    <div class="mb-12">
+        <div class="rounded-3xl overflow-hidden bg-slate-950 aspect-[16/9] max-h-[580px] shadow-2xl relative">
+            <img id="main-gallery-image" 
+                 src="{{ property.primary_image_url }}" 
+                 alt="{{ property.title }}" 
+                 class="w-full h-full object-cover transition-opacity duration-300">
+            <div class="absolute bottom-4 right-4 bg-navy/80 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-white text-xs font-semibold flex items-center gap-1.5">
+                <i data-lucide="camera" class="w-3.5 h-3.5 text-gold"></i> {{ property.images|length }} Photos
+            </div>
+        </div>
+
+        <!-- Thumbnails row -->
+        {% if property.images|length > 1 %}
+            <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3 mt-4">
+                {% for img in property.images %}
+                    <button type="button" 
+                            data-image-src="{{ img.image_url }}" 
+                            class="gallery-thumb-trigger relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition {{ 'ring-2 ring-gold border-transparent' if loop.first else 'border-slate-200 hover:border-slate-400' }}">
+                        <img src="{{ img.image_url }}" class="w-full h-full object-cover">
+                    </button>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- MAIN TWO-COLUMN CONTENT LAYOUT -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        
+        <!-- LEFT 2 COLUMNS: Property specs, description, amenities, calculator -->
+        <div class="lg:col-span-2 space-y-10">
+            
+            <!-- Key Property Highlights Bar -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-6 rounded-2xl bg-white border border-slate-200 shadow-sm text-center">
+                <div class="p-2">
+                    <i data-lucide="bed" class="w-5 h-5 text-gold mx-auto mb-1.5"></i>
+                    <span class="block text-xl font-bold text-navy">{{ property.bedrooms }}</span>
+                    <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Bedrooms</span>
+                </div>
+                <div class="p-2 border-l border-slate-100">
+                    <i data-lucide="bath" class="w-5 h-5 text-gold mx-auto mb-1.5"></i>
+                    <span class="block text-xl font-bold text-navy">{{ property.bathrooms }}</span>
+                    <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Bathrooms</span>
+                </div>
+                <div class="p-2 border-l border-slate-100">
+                    <i data-lucide="maximize-2" class="w-5 h-5 text-gold mx-auto mb-1.5"></i>
+                    <span class="block text-xl font-bold text-navy">{{ property.area_sqft|number }}</span>
+                    <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Square Feet</span>
+                </div>
+                <div class="p-2 border-l border-slate-100">
+                    <i data-lucide="car" class="w-5 h-5 text-gold mx-auto mb-1.5"></i>
+                    <span class="block text-xl font-bold text-navy">{{ property.garages }}</span>
+                    <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Garage Bays</span>
+                </div>
+            </div>
+
+            <!-- Property Overview & Narrative -->
+            <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm space-y-4">
+                <h3 class="text-xl font-bold font-serif text-navy">Property Description</h3>
+                <div class="text-slate-600 text-sm leading-relaxed space-y-3 font-normal whitespace-pre-line">
+                    {{ property.description }}
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+                    <div>
+                        <span class="text-slate-400 block font-medium">Year Built</span>
+                        <span class="font-bold text-slate-800">{{ property.year_built or 'Custom Modern' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block font-medium">Property ID</span>
+                        <span class="font-bold text-slate-800">EE-{{ property.id }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block font-medium">Total Views</span>
+                        <span class="font-bold text-slate-800">{{ property.views_count or 1 }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amenities & High-End Features -->
+            <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
+                <h3 class="text-xl font-bold font-serif text-navy mb-6">Features & Amenities</h3>
+                
+                {% set amen_list = property.amenities_list %}
+                {% if amen_list %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        {% for am in amen_list %}
+                            <div class="flex items-center gap-2.5 p-3 rounded-xl bg-beige-light/60 border border-slate-100 text-xs font-semibold text-slate-800">
+                                <div class="w-6 h-6 rounded-lg bg-navy text-gold flex items-center justify-center shrink-0">
+                                    <i data-lucide="check" class="w-3.5 h-3.5 stroke-[2.5]"></i>
+                                </div>
+                                <span>{{ am }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-xs text-slate-500">Contact the listing advisor for complete architectural finish schedules and amenity details.</p>
+                {% endif %}
+            </div>
+
+            <!-- INTERACTIVE MORTGAGE CALCULATOR -->
+            <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-gold-light text-yellow-800 flex items-center justify-center">
+                        <i data-lucide="calculator" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold font-serif text-navy">Estimated Payment Calculator</h3>
+                        <p class="text-xs text-slate-500">Simulate your estimated monthly debt service, property tax, and insurance.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Home Price ($)</label>
+                        <input type="number" id="calc-home-price" value="{{ property.price|int }}" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Down Payment (%)</label>
+                        <input type="number" id="calc-down-payment" value="20" min="0" max="100" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Interest Rate (%)</label>
+                        <input type="number" step="0.1" id="calc-interest-rate" value="6.5" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy">
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Loan Term</label>
+                    <select id="calc-loan-term" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-navy bg-white">
+                        <option value="30">30 Years Fixed</option>
+                        <option value="15">15 Years Fixed</option>
+                        <option value="20">20 Years Fixed</option>
+                    </select>
+                </div>
+
+                <!-- Monthly Output Box -->
+                <div class="p-6 rounded-2xl bg-navy text-white flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs uppercase tracking-wider text-slate-300 font-semibold block">Total Estimated Monthly Payment</span>
+                        <div class="flex items-center gap-4 text-xs text-slate-400 mt-1">
+                            <span>Principal & Int: <strong id="calc-principal-interest" class="text-white">$0</strong></span>
+                            <span>Taxes & Ins: <strong id="calc-tax-insurance" class="text-white">$0</strong></span>
+                        </div>
+                    </div>
+                    <div class="text-3xl font-extrabold text-gold font-serif" id="calc-monthly-payment">
+                        $0
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIMILAR PROPERTIES RECOMMENDATION -->
+            {% if similar_properties %}
+                <div class="pt-6">
+                    <h3 class="text-xl font-bold font-serif text-navy mb-6">Similar Nearby Residences</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {% for sim in similar_properties %}
+                            <article class="property-card bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm flex flex-col">
+                                <div class="relative aspect-[16/10] overflow-hidden bg-slate-100">
+                                    <img src="{{ sim.primary_image_url }}" alt="{{ sim.title }}" class="img-zoom w-full h-full object-cover">
+                                    <div class="absolute bottom-2 left-2 bg-navy/90 text-white text-xs px-2.5 py-1 rounded-lg font-bold">
+                                        {{ sim.formatted_price }}
+                                    </div>
+                                </div>
+                                <div class="p-4 flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <span class="text-[10px] uppercase font-bold text-gold tracking-wider">{{ sim.property_type }}</span>
+                                        <h4 class="text-sm font-bold text-slate-900 hover:text-gold transition line-clamp-1 mt-0.5">
+                                            <a href="{{ url_for('properties.show_property', property_id=sim.id) }}">{{ sim.title }}</a>
+                                        </h4>
+                                        <p class="text-[11px] text-slate-400 mt-1">{{ sim.city }}, {{ sim.state }}</p>
+                                    </div>
+                                    <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                                        <span>{{ sim.bedrooms }} Beds • {{ sim.bathrooms }} Baths</span>
+                                        <a href="{{ url_for('properties.show_property', property_id=sim.id) }}" class="text-gold font-bold">View →</a>
+                                    </div>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+
+        <!-- RIGHT COLUMN: Contact Advisor & Private Tour Schedule Card -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-md sticky top-24 space-y-6">
+                
+                <!-- Listing Advisor Profile -->
+                <div class="flex items-center gap-4 pb-6 border-b border-slate-100">
+                    <img src="{{ property.owner.avatar_url if property.owner and property.owner.avatar_url else 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80' }}" alt="{{ property.owner.full_name }}" class="w-14 h-14 rounded-2xl object-cover shadow-sm">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold tracking-wider text-gold block">Listing Advisor</span>
+                        <h4 class="text-base font-bold text-navy">{{ property.contact_name or property.owner.full_name }}</h4>
+                        <p class="text-xs text-slate-500">{{ property.owner.agency if property.owner else 'EstateEase Premier Realty' }}</p>
+                    </div>
+                </div>
+
+                <!-- Direct Contact Actions -->
+                <div class="grid grid-cols-2 gap-2 text-center text-xs">
+                    <a href="tel:{{ property.contact_phone or '+15553289842' }}" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition">
+                        <i data-lucide="phone" class="w-3.5 h-3.5 text-gold"></i> Call Direct
+                    </a>
+                    <a href="mailto:{{ property.contact_email or property.owner.email }}" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition">
+                        <i data-lucide="mail" class="w-3.5 h-3.5 text-gold"></i> Email Agent
+                    </a>
+                </div>
+
+                <!-- Interactive Tour & Inquiry Form -->
+                <div>
+                    <h4 class="text-sm font-bold uppercase tracking-wider text-slate-800 mb-3">Schedule a Private Showing</h4>
+                    
+                    <form id="property-inquiry-form" data-property-id="{{ property.id }}" class="space-y-3">
+                        
+                        <!-- Inquiry Type Tabs -->
+                        <div class="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl text-xs mb-3">
+                            <label class="text-center">
+                                <input type="radio" name="inquiry_type" value="Tour Request" checked class="hidden peer">
+                                <span class="block py-1.5 font-bold rounded-lg peer-checked:bg-white peer-checked:text-navy peer-checked:shadow-sm text-slate-600 cursor-pointer transition">
+                                    Private Tour
+                                </span>
+                            </label>
+                            <label class="text-center">
+                                <input type="radio" name="inquiry_type" value="Information Request" class="hidden peer">
+                                <span class="block py-1.5 font-bold rounded-lg peer-checked:bg-white peer-checked:text-navy peer-checked:shadow-sm text-slate-600 cursor-pointer transition">
+                                    Request Info
+                                </span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <input type="text" name="name" required placeholder="Your Full Name" value="{{ current_user.full_name if current_user.is_authenticated else '' }}" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                        </div>
+
+                        <div>
+                            <input type="email" name="email" required placeholder="Email Address" value="{{ current_user.email if current_user.is_authenticated else '' }}" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                        </div>
+
+                        <div>
+                            <input type="tel" name="phone" required placeholder="Phone Number" value="{{ current_user.phone if current_user.is_authenticated and current_user.phone else '' }}" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                        </div>
+
+                        <div>
+                            <input type="text" name="preferred_date" placeholder="Preferred Date / Time (e.g. Sat 2:00 PM)" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">
+                        </div>
+
+                        <div>
+                            <textarea name="message" rows="3" required placeholder="Special requests, questions, or offer inquiries..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-navy">I am interested in scheduling a private showing of {{ property.title }}.</textarea>
+                        </div>
+
+                        <button type="submit" class="w-full py-3 px-4 rounded-xl bg-navy hover:bg-navy-light text-white font-bold text-xs uppercase tracking-wider transition shadow-md shadow-navy/20 flex items-center justify-center gap-2">
+                            <i data-lucide="send" class="w-4 h-4 text-gold"></i> Send Request
+                        </button>
+
+                        <p class="text-[10px] text-slate-400 text-center mt-2">
+                            Your contact details will only be shared with the certified listing advisor.
+                        </p>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+

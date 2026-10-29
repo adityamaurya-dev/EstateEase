@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}My Listings Portfolio | EstateEase{% endblock %}
+
+{% block content %}
+<div class="bg-white border-b border-slate-200/80 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <nav class="flex items-center gap-2 text-xs text-slate-400 mb-2 font-medium">
+                    <a href="{{ url_for('main.index') }}" class="hover:text-gold transition">Home</a>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                    <span class="text-slate-700">My Listings</span>
+                </nav>
+                <h1 class="text-3xl font-bold font-serif text-navy tracking-tight">My Property Portfolio</h1>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Manage active listings, track engagement, and update sales statuses.</p>
+            </div>
+            <div>
+                <a href="{{ url_for('properties.create_property') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gold hover:bg-gold-hover text-navy font-bold text-xs uppercase tracking-wider transition shadow-md shadow-gold/20">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Post New Property
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    
+    <!-- KPI COUNTER CARDS -->
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-10">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs uppercase tracking-wider text-slate-400 font-bold block mb-1">Your Listings</span>
+            <span class="text-2xl font-extrabold text-navy font-serif">{{ total_count }}</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs uppercase tracking-wider text-slate-400 font-bold block mb-1">Available</span>
+            <span class="text-2xl font-extrabold text-emerald-600 font-serif">{{ available_count }}</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs uppercase tracking-wider text-slate-400 font-bold block mb-1">Under Contract</span>
+            <span class="text-2xl font-extrabold text-amber-600 font-serif">{{ pending_count }}</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs uppercase tracking-wider text-slate-400 font-bold block mb-1">Sold / Rented</span>
+            <span class="text-2xl font-extrabold text-blue-600 font-serif">{{ closed_count }}</span>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm col-span-2 sm:col-span-1">
+            <span class="text-xs uppercase tracking-wider text-slate-400 font-bold block mb-1">Total Views</span>
+            <span class="text-2xl font-extrabold text-navy font-serif">{{ total_views }}</span>
+        </div>
+    </div>
+
+    <!-- LISTINGS TABLE -->
+    {% if properties %}
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="font-bold text-navy text-base">Your Active & Historical Listings</h3>
+                <span class="text-xs text-slate-400">{{ properties|length }} records</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold">
+                            <th class="py-3.5 px-6">Property</th>
+                            <th class="py-3.5 px-4">Price & Purpose</th>
+                            <th class="py-3.5 px-4">Specs</th>
+                            <th class="py-3.5 px-4">Status</th>
+                            <th class="py-3.5 px-4">Views</th>
+                            <th class="py-3.5 px-6 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for prop in properties %}
+                            <tr class="hover:bg-slate-50/80 transition">
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center gap-3">
+                                        <img src="{{ prop.primary_image_url }}" alt="{{ prop.title }}" class="w-14 h-11 rounded-lg object-cover bg-slate-100 shrink-0">
+                                        <div>
+                                            <a href="{{ url_for('properties.show_property', property_id=prop.id) }}" class="font-bold text-slate-900 hover:text-gold transition line-clamp-1 text-sm">
+                                                {{ prop.title }}
+                                            </a>
+                                            <p class="text-[11px] text-slate-400 mt-0.5">{{ prop.city }}, {{ prop.state }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="py-4 px-4 whitespace-nowrap">
+                                    <span class="font-bold text-slate-900 text-sm block">{{ prop.formatted_price }}</span>
+                                    <span class="text-[10px] uppercase font-bold tracking-wider {{ 'text-blue-600' if prop.purpose == 'buy' else 'text-emerald-600' }}">
+                                        {{ 'For Sale' if prop.purpose == 'buy' else 'For Rent' }}
+                                    </span>
+                                </td>
+
+                                <td class="py-4 px-4 whitespace-nowrap text-slate-600">
+                                    <span>{{ prop.bedrooms }} Beds • {{ prop.bathrooms }} Baths</span>
+                                    <span class="block text-[11px] text-slate-400">{{ prop.area_sqft|number }} sq ft</span>
+                                </td>
+
+                                <td class="py-4 px-4 whitespace-nowrap">
+                                    <form action="{{ url_for('dashboard.update_status', property_id=prop.id) }}" method="POST" class="inline">
+                                        <select name="status" onchange="this.form.submit()" class="text-xs font-bold rounded-lg px-2.5 py-1 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-navy {{ 'bg-emerald-50 text-emerald-800' if prop.status == 'Available' else ('bg-amber-50 text-amber-800' if prop.status == 'Pending' else 'bg-slate-100 text-slate-800') }}">
+                                            <option value="Available" {{ 'selected' if prop.status == 'Available' }}>Available</option>
+                                            <option value="Pending" {{ 'selected' if prop.status == 'Pending' }}>Pending</option>
+                                            <option value="Sold" {{ 'selected' if prop.status == 'Sold' }}>Sold</option>
+                                            <option value="Rented" {{ 'selected' if prop.status == 'Rented' }}>Rented</option>
+                                        </select>
+                                    </form>
+                                </td>
+
+                                <td class="py-4 px-4 whitespace-nowrap text-slate-600">
+                                    <span class="inline-flex items-center gap-1">
+                                        <i data-lucide="eye" class="w-3.5 h-3.5 text-slate-400"></i> {{ prop.views_count or 0 }}
+                                    </span>
+                                </td>
+
+                                <td class="py-4 px-6 whitespace-nowrap text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ url_for('properties.show_property', property_id=prop.id) }}" class="p-1.5 rounded-lg text-slate-400 hover:text-navy hover:bg-slate-100 transition" title="View Property">
+                                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                                        </a>
+                                        <a href="{{ url_for('properties.edit_property', property_id=prop.id) }}" class="p-1.5 rounded-lg text-slate-400 hover:text-navy hover:bg-slate-100 transition" title="Edit Property">
+                                            <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                        </a>
+                                        <form id="delete-my-listing-{{ prop.id }}" action="{{ url_for('properties.delete_property', property_id=prop.id) }}" method="POST" class="inline">
+                                            <button type="button" onclick="confirmDeleteModal('delete-my-listing-{{ prop.id }}', '{{ prop.title|replace('\'', '\\\'') }}')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Delete Property">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="bg-white rounded-3xl p-12 text-center border border-slate-200/80 shadow-sm max-w-md mx-auto my-12">
+            <div class="w-16 h-16 rounded-2xl bg-gold-light text-yellow-800 flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="home" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold font-serif text-navy mb-2">No Properties Listed Yet</h3>
+            <p class="text-xs sm:text-sm text-slate-500 mb-6 leading-relaxed">
+                You haven't published any property listings yet. Publish your first luxury home, penthouse, or villa today.
+            </p>
+            <a href="{{ url_for('properties.create_property') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gold hover:bg-gold-hover text-navy font-bold text-xs uppercase tracking-wider transition shadow-md shadow-gold/20">
+                <i data-lucide="plus" class="w-4 h-4"></i> Add Your First Listing
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
